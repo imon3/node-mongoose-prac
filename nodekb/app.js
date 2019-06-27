@@ -135,6 +135,24 @@ app.post("/articles/edit/:id", async (req, res) => {
   }
 });
 
+// Delete Article
+app.delete("/article/:id", async (req, res) => {
+  try {
+    const id = await req.params.id;
+    const query = { _id: id };
+
+    await Article.remove(query, err => {
+      if (err) {
+        console.log(err);
+      } else {
+        res.send("Success");
+      }
+    });
+  } catch (err) {
+    console.log(err);
+  }
+});
+
 const port = 3000;
 
 app.listen(port, () => {
