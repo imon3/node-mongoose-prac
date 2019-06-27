@@ -2,6 +2,10 @@ const path = require("path");
 const express = require("express");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
+const session = require("express-session");
+const expressValidator = require("express-validator");
+const flash = require("connect-flash");
+const expressMessages = require("express-messages");
 
 mongoose.connect("mongodb://localhost/nodekb");
 
@@ -35,6 +39,23 @@ app.use(bodyParser.json());
 // Set Public Folder
 app.use(express.static(path.join(__dirname, "public")));
 
+// Express Session Middleware
+app.use(
+  session({
+    secret: "keyboard cat",
+    resave: false,
+    saveUninitialized: true,
+    cookie: { secure: true }
+  })
+);
+
+// Express Messages Middleware
+app.use(require("connect-flash")());
+app.use(function(req, res, next) {
+  res.locals.messages = expressMessages(req, res);
+  next();
+});
+
 // Get Route Home
 app.get("/", async (req, res) => {
   try {
@@ -48,6 +69,26 @@ app.get("/", async (req, res) => {
     console.log(err);
   }
 });
+
+// Express Validator
+app.use(
+  expressValidator({
+    errorFormatter: (param, msg, value) => {
+      const namespace = param.split("."),
+        root = namespace.shift(),
+        formParam = root;
+
+      while (namespace.length) {
+        formParam += `[${namespace.shift()}]`;
+      }
+      return {
+        param: formParam,
+        msg,
+        value
+      };
+    }
+  })
+);
 
 // Add Route
 app.get("/articles/add", async (req, res) => {
