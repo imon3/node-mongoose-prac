@@ -1,6 +1,7 @@
 const path = require("path");
 const express = require("express");
 const mongoose = require("mongoose");
+const bodyParser = require("body-parser");
 
 mongoose.connect("mongodb://localhost/nodekb");
 
@@ -25,6 +26,14 @@ const Article = require("./models/article");
 // Load View Engine
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "pug");
+
+// Body Parser Middlwware
+app.use(bodyParser.urlencoded({ extended: false }));
+// Parse App JSON
+app.use(bodyParser.json());
+
+// Set Public Folder
+app.use(express.static(path.join(__dirname, "public")));
 
 // Get Route Home
 app.get("/", async (req, res) => {
@@ -54,7 +63,20 @@ app.get("/articles/add", async (req, res) => {
 // Add Submit POST Route
 app.post("/articles/add", async (req, res) => {
   try {
-    console.log("submitted");
+    const { title, author, body } = await req.body;
+    let article = await new Article();
+    article.title = title;
+    article.author = author;
+    article.body = body;
+
+    article.save(err => {
+      if (err) {
+        console.log(err);
+        return;
+      } else {
+        res.redirect("/");
+      }
+    });
   } catch (err) {
     console.log(err);
   }
