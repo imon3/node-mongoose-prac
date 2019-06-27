@@ -1,7 +1,26 @@
 const path = require("path");
 const express = require("express");
+const mongoose = require("mongoose");
 
+mongoose.connect("mongodb://localhost/nodekb");
+
+const db = mongoose.connection;
+
+// Check Connection
+db.once("open", () => {
+  console.log("connected to mongoDB");
+});
+
+// Check For DB Errors
+db.on("error", err => {
+  console.log(err);
+});
+
+// Initialize App
 const app = express();
+
+// Bring In Models
+const Article = require("./models/article");
 
 // Load View Engine
 app.set("views", path.join(__dirname, "views"));
@@ -10,30 +29,11 @@ app.set("view engine", "pug");
 // Get Route Home
 app.get("/", async (req, res) => {
   try {
-    let articles = [
-      {
-        id: 1,
-        title: "Article One",
-        author: "Petter Popper",
-        body: "This is Article One"
-      },
-      {
-        id: 2,
-        title: "Article Two",
-        author: "Mike Jones",
-        body: "This is Article Two"
-      },
-      {
-        id: 3,
-        title: "Article Three",
-        author: "Tom Jerry",
-        body: "This is Article Three"
-      }
-    ];
-
-    res.render("index", {
-      title: "Hello",
-      articles: articles
+    await Article.find({}, (err, articles) => {
+      res.render("index", {
+        title: "Hello",
+        articles: articles
+      });
     });
   } catch (err) {
     console.log(err);
@@ -46,6 +46,15 @@ app.get("/articles/add", async (req, res) => {
     res.render("add_article", {
       title: "Add Article"
     });
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+// Add Submit POST Route
+app.post("/articles/add", async (req, res) => {
+  try {
+    console.log("submitted");
   } catch (err) {
     console.log(err);
   }
