@@ -4,13 +4,16 @@
   "description": "simple knowledge base app",
   "main": "app.js",
   "scripts": {
-    "start": "node app",
-    "server": "nodemon app"
+    "start": "nodemon app"
   },
   "keywords": [],
   "author": "Imon Ovbude",
   "license": "ISC",
   "devDependencies": {
     "nodemon": "^1.19.1"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "pug": "^2.0.4"
   }
 }
