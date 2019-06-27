@@ -60,6 +60,35 @@ app.get("/articles/add", async (req, res) => {
   }
 });
 
+// Get Single Article
+app.get("/article/:id", async (req, res) => {
+  try {
+    const id = await req.params.id;
+    await Article.findById(id, (err, article) => {
+      res.render("article", {
+        article
+      });
+    });
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+// Load Article Edit Form
+app.get("/article/edit/:id", async (req, res) => {
+  try {
+    const id = await req.params.id;
+    await Article.findById(id, (err, article) => {
+      res.render("edit_article", {
+        title: "Edit Article",
+        article
+      });
+    });
+  } catch (err) {
+    console.log(err);
+  }
+});
+
 // Add Submit POST Route
 app.post("/articles/add", async (req, res) => {
   try {
@@ -73,6 +102,30 @@ app.post("/articles/add", async (req, res) => {
       if (err) {
         console.log(err);
         return;
+      } else {
+        res.redirect("/");
+      }
+    });
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+// Update Submit POST Route
+app.post("/articles/edit/:id", async (req, res) => {
+  try {
+    const id = await req.params.id;
+    const { title, author, body } = await req.body;
+    const article = {};
+
+    article.title = title;
+    article.author = author;
+    article.body = body;
+
+    const query = { _id: id };
+    await Article.update(query, article, err => {
+      if (err) {
+        console.log(err);
       } else {
         res.redirect("/");
       }

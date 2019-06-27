@@ -3,14 +3,14 @@ extends layout
 block content
     h1 #{title}
     .container
-        form.container-fluid(method='POST', action='/articles/add')
+        form.container-fluid.mb-5(method='POST', action='/articles/add')
             #form-group
                 label Title:
                 input.form-control(name='title', type='text')
             #form-group
                 label Author:
                 input.form-control(name='author', type='text')
-            #form-group
+            #form-group.mb-2
                 label Body:
                 textarea.form-control(name='body', type='text')
             input.btn.btn-primary(type='submit', value='submit')
