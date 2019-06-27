@@ -3,7 +3,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const session = require("express-session");
-const expressValidator = require("express-validator");
+const { check, validationResult } = require("express-validator");
 const flash = require("connect-flash");
 const expressMessages = require("express-messages");
 
@@ -43,9 +43,8 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use(
   session({
     secret: "keyboard cat",
-    resave: false,
-    saveUninitialized: true,
-    cookie: { secure: true }
+    resave: true,
+    saveUninitialized: true
   })
 );
 
@@ -55,6 +54,26 @@ app.use(function(req, res, next) {
   res.locals.messages = expressMessages(req, res);
   next();
 });
+
+// Express Validator
+// app.use(
+//   expressValidator({
+//     errorFormatter: (param, msg, value) => {
+//       const namespace = param.split("."),
+//         root = namespace.shift(),
+//         formParam = root;
+
+//       while (namespace.length) {
+//         formParam += `[${namespace.shift()}]`;
+//       }
+//       return {
+//         param: formParam,
+//         msg,
+//         value
+//       };
+//     }
+//   })
+// );
 
 // Get Route Home
 app.get("/", async (req, res) => {
@@ -69,26 +88,6 @@ app.get("/", async (req, res) => {
     console.log(err);
   }
 });
-
-// Express Validator
-app.use(
-  expressValidator({
-    errorFormatter: (param, msg, value) => {
-      const namespace = param.split("."),
-        root = namespace.shift(),
-        formParam = root;
-
-      while (namespace.length) {
-        formParam += `[${namespace.shift()}]`;
-      }
-      return {
-        param: formParam,
-        msg,
-        value
-      };
-    }
-  })
-);
 
 // Add Route
 app.get("/articles/add", async (req, res) => {
@@ -131,26 +130,49 @@ app.get("/article/edit/:id", async (req, res) => {
 });
 
 // Add Submit POST Route
-app.post("/articles/add", async (req, res) => {
-  try {
-    const { title, author, body } = await req.body;
-    let article = await new Article();
-    article.title = title;
-    article.author = author;
-    article.body = body;
-
-    article.save(err => {
-      if (err) {
-        console.log(err);
-        return;
+app.post(
+  "/articles/add",
+  [
+    check("title")
+      .not()
+      .isEmpty(),
+    check("author")
+      .not()
+      .isEmpty(),
+    check("body")
+      .not()
+      .isEmpty()
+  ],
+  async (req, res) => {
+    try {
+      const errors = await validationResult(req);
+      if (!errors.isEmpty()) {
+        res.render("add_article", {
+          title: "Add Article",
+          errors: errors.array()
+        });
       } else {
-        res.redirect("/");
+        const { title, author, body } = await req.body;
+        let article = await new Article();
+        article.title = title;
+        article.author = author;
+        article.body = body;
+
+        article.save(err => {
+          if (err) {
+            console.log(err);
+            return;
+          } else {
+            req.flash("success", "Article Added");
+            res.redirect("/");
+          }
+        });
       }
-    });
-  } catch (err) {
-    console.log(err);
+    } catch (err) {
+      console.log(err);
+    }
   }
-});
+);
 
 // Update Submit POST Route
 app.post("/articles/edit/:id", async (req, res) => {
@@ -168,6 +190,7 @@ app.post("/articles/edit/:id", async (req, res) => {
       if (err) {
         console.log(err);
       } else {
+        req.flash("success", "Article Updated");
         res.redirect("/");
       }
     });
