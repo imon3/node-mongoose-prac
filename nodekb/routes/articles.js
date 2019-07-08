@@ -18,7 +18,7 @@ router.use(
 );
 
 // Express Messages Middleware
-router.use(require("connect-flash")());
+router.use(flash());
 router.use(function(req, res, next) {
   res.locals.messages = expressMessages(req, res);
   next();

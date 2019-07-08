@@ -3,11 +3,11 @@ const express = require("express");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const session = require("express-session");
-const flash = require("connect-flash");
 const expressMessages = require("express-messages");
 
 // Routes Fies
 const articles = require("./routes/articles.js");
+const users = require("./routes/users.js");
 
 mongoose.connect("mongodb://localhost/nodekb");
 
@@ -41,9 +41,6 @@ app.use(bodyParser.json());
 // Set Public Folder
 app.use(express.static(path.join(__dirname, "public")));
 
-// Route Path
-app.use("/articles", articles);
-
 // Express Session Middleware
 app.use(
   session({
@@ -73,6 +70,10 @@ app.get("/", async (req, res) => {
     console.log(err);
   }
 });
+
+// Route Path
+app.use("/articles", articles);
+app.use("/users", users);
 
 const port = 3000;
 
