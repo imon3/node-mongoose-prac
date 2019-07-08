@@ -163,14 +163,24 @@ router.post("/edit/:id", async (req, res) => {
 // Delete Article
 router.delete("/:id", async (req, res) => {
   try {
+    if (!req.user._id) {
+      res.status(500).send();
+    }
+
     const id = await req.params.id;
     const query = { _id: id };
 
-    await Article.remove(query, err => {
-      if (err) {
-        console.log(err);
+    Article.findById(id, (err, article) => {
+      if (article.author != id) {
+        res.status(500).send();
       } else {
-        res.send("Success");
+        Article.remove(query, err => {
+          if (err) {
+            console.log(err);
+          } else {
+            res.send("Success");
+          }
+        });
       }
     });
   } catch (err) {
