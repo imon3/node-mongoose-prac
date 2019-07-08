@@ -7,6 +7,7 @@ const expressMessages = require("express-messages");
 
 // Bring In Models
 const Article = require("../models/article");
+const User = require("../models/user");
 
 // Express Session Middleware
 router.use(
@@ -24,8 +25,19 @@ router.use(function(req, res, next) {
   next();
 });
 
+// Acces Control
+ensureAuthenticated = (req, res, next) => {
+  if (req.isAuthenticated()) {
+    next();
+  } else {
+    req.flash("danger", "Please Login");
+    res.redirect("/users/login");
+  }
+};
+
+// Get Routes
 // Add Route
-router.get("/add", async (req, res) => {
+router.get("/add", ensureAuthenticated, async (req, res) => {
   try {
     res.render("add_article", {
       title: "Add Article"
@@ -40,8 +52,11 @@ router.get("/:id", async (req, res) => {
   try {
     const id = await req.params.id;
     await Article.findById(id, (err, article) => {
-      res.render("article", {
-        article
+      User.findById(article.author, (err, user) => {
+        res.render("article", {
+          article,
+          author: user.name
+        });
       });
     });
   } catch (err) {
@@ -50,20 +65,26 @@ router.get("/:id", async (req, res) => {
 });
 
 // Load Article Edit Form
-router.get("/edit/:id", async (req, res) => {
+router.get("/edit/:id", ensureAuthenticated, async (req, res) => {
   try {
     const id = await req.params.id;
     await Article.findById(id, (err, article) => {
-      res.render("edit_article", {
-        title: "Edit Article",
-        article
-      });
+      if (article.author != req.user._id) {
+        req.flash("danger", "Not Authorized");
+        res.redirect("/");
+      } else {
+        res.render("edit_article", {
+          title: "Edit Article",
+          article
+        });
+      }
     });
   } catch (err) {
     console.log(err);
   }
 });
 
+// Post Routes
 // Add Submit POST Route
 router.post(
   "/add",
@@ -90,10 +111,11 @@ router.post(
           errors: errors.array()
         });
       } else {
-        const { title, author, body } = await req.body;
+        const { title, body } = await req.body;
+        const { user } = await req;
         let article = await new Article();
         article.title = title;
-        article.author = author;
+        article.author = user._id;
         article.body = body;
 
         article.save(err => {
@@ -137,6 +159,7 @@ router.post("/edit/:id", async (req, res) => {
   }
 });
 
+// Delete Route
 // Delete Article
 router.delete("/:id", async (req, res) => {
   try {
