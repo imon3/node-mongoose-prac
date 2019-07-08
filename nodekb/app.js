@@ -4,12 +4,14 @@ const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const session = require("express-session");
 const expressMessages = require("express-messages");
+const passport = require("passport");
+const config = require("./config/database");
 
 // Routes Fies
 const articles = require("./routes/articles.js");
 const users = require("./routes/users.js");
 
-mongoose.connect("mongodb://localhost/nodekb");
+mongoose.connect(config.database);
 
 const db = mongoose.connection;
 
@@ -56,6 +58,13 @@ app.use(function(req, res, next) {
   res.locals.messages = expressMessages(req, res);
   next();
 });
+
+// Passport Config
+require("./config/passsport")(passport);
+
+// Passport Middleware
+app.use(passport.initialize());
+app.use(passport.session());
 
 // Get Route Home
 app.get("/", async (req, res) => {

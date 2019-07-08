@@ -6,6 +6,7 @@ const router = express.Router();
 // User Model
 const User = require("../models/user");
 
+// Get Request
 // Register Form
 router.get("/register", async (req, res) => {
   try {
@@ -15,6 +16,7 @@ router.get("/register", async (req, res) => {
   }
 });
 
+//Post Requset
 // Register Process
 router.post("/register", async (req, res) => {
   try {
