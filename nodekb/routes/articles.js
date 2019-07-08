@@ -72,10 +72,10 @@ router.post(
       .not()
       .isEmpty()
       .withMessage("Title is required"),
-    check("author")
-      .not()
-      .isEmpty()
-      .withMessage("Author is required"),
+    // check("author")
+    //   .not()
+    //   .isEmpty()
+    //   .withMessage("Author is required"),
     check("body")
       .not()
       .isEmpty()

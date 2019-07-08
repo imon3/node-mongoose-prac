@@ -66,6 +66,11 @@ require("./config/passsport")(passport);
 app.use(passport.initialize());
 app.use(passport.session());
 
+app.get("*", (req, res, next) => {
+  res.locals.user = req.user || null;
+  next();
+});
+
 // Get Route Home
 app.get("/", async (req, res) => {
   try {
